@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from datasets import load_dataset #to load in dataset as per recommendation from hugging face
 
-# Emotions dataset from Hugging Face (27) + neutral (1) = 28 total emotions
+# Emotions dataset from Hugging Face (27)
 EMOTION_COLS = [
     "admiration",
     "amusement",
