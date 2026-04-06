@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.env
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Data files (raw data loaded from HuggingFace, not stored here)
+data/raw/
+
+# Model files (too large for git)
+*.pkl
+
+# OS
+.DS_Store
+Thumbs.db
+
+
