@@ -1,28 +1,28 @@
 # Data245_Group3_TeamProject
 
 ## Repository Structure
-Data245_Group3_TeamProject/
-│
-├── README.md                  ← you are here
-├── data_dictionary.csv        ← variable definitions for all datasets
-├── requirements.txt           ← python dependencies
-├── .gitignore
-│
-├── data/
-│   └── derived/               ← push output CSVs here
-│
-├── scripts/                   ← all scripts should have clear comments
-│   ├── integrate_features.py  ← merges all feature CSVs (Louisa)
-│   ├── clustering.py          ← K-Means clustering (Natalie & Sarah)
-│   ├── classify.py            ← Logistic Regression & Random Forest (Louisa)
-│   └── data_splits.py         ← train/test split logic (Ananya)
-│
-├── notebooks/
-│   └──                        ← exploratory analysis notebooks go here (if exists)
-│
-└── results/
-├── model_results.json         ← evaluation metrics
-└── figures/                   ← confusion matrices, elbow plots, etc.
+Data245_Group3_TeamProject/  
+│  
+├── README.md                  ← you are here  
+├── data_dictionary.csv        ← variable definitions for all datasets  
+├── requirements.txt           ← python dependencies  
+├── .gitignore  
+│  
+├── data/  
+│   └── derived/               ← push output CSVs here  
+│  
+├── scripts/                   ← all scripts should have clear comments  
+│   ├── integrate_features.py  ← merges all feature CSVs (Louisa)  
+│   ├── clustering.py          ← K-Means clustering (Natalie & Sarah)  
+│   ├── classify.py            ← Logistic Regression & Random Forest (Louisa)  
+│   └── data_splits.py         ← train/test split logic (Ananya)  
+│  
+├── notebooks/  
+│   └──                        ← exploratory analysis notebooks go here (if exists)  
+│  
+└── results/  
+├── model_results.json         ← evaluation metrics  
+└── figures/                   ← confusion matrices, elbow plots, etc.  
 
 ## Setup
 
