@@ -11,17 +11,12 @@ Data245_Group3_TeamProject/
 ├── data/  
 │   └── derived/               ← push output CSVs here  
 │  
-├── scripts/                   ← all scripts should have clear comments  
-│   ├── integrate_features.py  ← merges all feature CSVs (Louisa)  
-│   ├── clustering.py          ← K-Means clustering (Natalie & Sarah)  
-│   ├── classify.py            ← Logistic Regression & Random Forest (Louisa)  
-│   └── data_splits.py         ← train/test split logic (Ananya)  
+├── scripts/                   ← push python scripts here, all scripts should have clear comments  
 │  
-├── notebooks/  
-│   └──                        ← exploratory analysis notebooks go here (if exists)  
+├── notebooks/                 ← exploratory analysis notebooks go here (if exists)  
 │  
-└── results/  
-├── model_results.json         ← evaluation metrics  
+└── results/                   ← evaluation metrics
+│ 
 └── figures/                   ← confusion matrices, elbow plots, etc.  
 
 ## Setup
