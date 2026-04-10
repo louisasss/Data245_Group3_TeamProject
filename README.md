@@ -15,8 +15,8 @@ Data245_Group3_TeamProject/
 │  
 ├── notebooks/                 ← exploratory analysis notebooks go here (if exists)  
 │  
-└── results/                   ← evaluation metrics
-│ 
+└── results/                   ← evaluation metrics  
+│   
 └── figures/                   ← confusion matrices, elbow plots, etc.  
 
 ## Setup
