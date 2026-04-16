@@ -23,3 +23,6 @@ Thumbs.db
 venv/
 env/
 ENV/
+
+# IDE
+.vscode/
