@@ -206,12 +206,12 @@ def main():
     print("\nModels saved!")
 
     # 6. Confusion matrices
-    print("Logistic Regression Confusion Matrix:")
+    # logistic regression
     ConfusionMatrixDisplay.from_predictions(y_true=y_test, y_pred=final_lr_pred)
     plt.title("Logistic Regression - Test Set")
     plt.savefig('results/figures/confusion_matrix_lr.png')
     plt.close()
-    print("Random Forest Confusion Matrix:")
+    # random forest
     ConfusionMatrixDisplay.from_predictions(y_true=y_test, y_pred=final_rf_pred)
     plt.title("Random Forest - Test Set")
     plt.savefig('results/figures/confusion_matrix_rf.png')
