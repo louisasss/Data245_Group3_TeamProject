@@ -11,10 +11,15 @@ __pycache__/
 data/raw/
 
 # Model files (too large for git)
+models/
 *.pkl
+*.joblib
 
 # OS
 .DS_Store
 Thumbs.db
 
-
+# virtual environments
+venv/
+env/
+ENV/
