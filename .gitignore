@@ -3,6 +3,7 @@ __pycache__/
 *.py[cod]
 *.egg-info/
 .env
+*.pyc
 
 # Jupyter
 .ipynb_checkpoints/
@@ -15,11 +16,27 @@ models/
 *.pkl
 *.joblib
 
+# Results (optional - you're keeping these, which is fine)
+# results/
+
 # OS
 .DS_Store
 Thumbs.db
 
-# virtual environments
+# Virtual environments
 venv/
 env/
 ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# pytest cache
+.pytest_cache/
+
+# MyPy cache
+.mypy_cache/
