@@ -152,7 +152,7 @@ This project was completed under the guidance of Professor Vishnu Pendyala for D
 If using this code or methodology:
 
 ```
-Stumpf, L., Lee, S.A., Leung, N., & Yallapragada, A. (2026). 
+Stumpf, L., Lee, S., Leung, N., & Yallapragada, A. (2026). 
 From Noise to Signal: Leveraging Annotator Disagreement to Measure 
 Emotional Complexity Across Online Communities. 
 DATA 245 Machine Learning Project, San José State University.
