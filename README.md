@@ -135,8 +135,8 @@ python scripts/classifiers.py
 
 ## Team Members
 
-- **Sang Ah Lee** - Feature engineering, literature review
-- **Natalie Leung** - Clustering implementation, data visualization  
+- **Natalie Leung** - Feature engineering, literature review
+- **Sang Ah Lee** - Clustering implementation, data visualization  
 - **Louisa Stumpf** - Pipeline integration, classifier training, GitHub management
 - **Ananya Yallapragada** - Feature engineering, entropy calculations
 
