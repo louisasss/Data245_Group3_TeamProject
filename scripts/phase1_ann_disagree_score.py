@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from datasets import load_dataset #to load in dataset as per recommendation from hugging face
+from pathlib import Path
 
 # Emotions dataset from Hugging Face (27)
 EMOTION_COLS = [
@@ -63,7 +64,7 @@ def main():
     print("Successfully computed")
 
     # Save the results to a CSV file
-    output_path = "disagreement_scores.csv"
+    output_path = Path("data") / "derived" / "phase1_disagreement_scores.csv"
     features.to_csv(output_path, index=False)
     print(f"Saved disagreement scores to {output_path}")
 

@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from datasets import load_dataset #to load in dataset as per recommendation from hugging face
+from pathlib import Path
 
 EMOTION_COLS = [
     "admiration",
@@ -116,9 +117,9 @@ def main():
     
     # Need reset_index() so the groupby key id is a regular column after being used
     features = (df_raw.groupby("comment_id", sort=False).apply(compute_comment_features).reset_index())
-    print("Scuessfully computed")
+    print("Sucessfully computed")
     
-    output_path = "comment_entropy_valence.csv"
+    output_path = Path("data") / "derived" / "phase1_comment_entropy_valence.csv"
     features.to_csv(output_path, index=False)
     print(f"\nSaved output to {output_path}")
 

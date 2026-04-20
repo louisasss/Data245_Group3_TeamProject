@@ -23,12 +23,12 @@ def create_dummy_data():
     Create temporary dummy data for testing
     """
     df = pd.DataFrame({
-        'entropy': np.random.random(100),
-        'annotator_disagreement': np.random.randint(0, 28, 100),
+        'emotional_entropy': np.random.random(100),
         'valence_mixing': np.random.random(100),
         'multi_label_count': np.random.randint(0, 28, 100),
         'example_very_unclear': np.random.randint(0, 2, 100),
-        'cluster_label': np.random.randint(0, 4, 100)
+        'annotator_disagreement_score': np.random.randint(0, 28, 100),
+        'cluster': np.random.randint(0, 4, 100)
     })
     return df
 
@@ -43,15 +43,16 @@ def load_data(filepath=None):
     DataFrame with features and cluster labels
     
     Columns expected from csv:
-    - entropy
-    - annotator_disagreement  
+    - emotional_entropy  
     - valence_mixing
     - multi_label_count
     - example_very_unclear
-    - cluster_label
+    - unclear_fraction
+    - annotator_disagreement_score
+    - cluster
     """
     if filepath is None:
-        filepath = Path('data') / 'derived' / 'feature_engineered_data.csv'
+        filepath = Path('data') / 'derived' / 'comments_with_clusters_k4.csv'
     df = pd.read_csv(filepath)
     return df
 
@@ -60,8 +61,8 @@ def load_and_prep_data(df):
     """"
     Splits data into 90% train, 10% test (stratified by cluster)
     """
-    X = df.drop('cluster_label', axis=1)
-    y = df['cluster_label']
+    X = df.drop(['cluster', 'comment_id', 'subreddit', 'unclear_fraction'], axis=1)
+    y = df['cluster']
     X_train, X_test, y_train, y_test = train_test_split(X, y, train_size=0.9, stratify=y, random_state=random_seed)
     return X_train, X_test, y_train, y_test
 

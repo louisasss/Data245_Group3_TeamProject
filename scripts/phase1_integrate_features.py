@@ -7,11 +7,11 @@ dataset = load_dataset("google-research-datasets/go_emotions", "raw")
 df_raw = dataset["train"].to_pandas()
 
 # define variables for input csv file paths
-entropy_valence = os.path.join("data", "derived", "comment_entropy_valence.csv")
-multilabel_unclear = os.path.join("data", "derived", "comment_multilabel_unclear.csv")
-disagreement_score = os.path.join("data", "derived", "disagreement_scores.csv")
+entropy_valence = os.path.join("data", "derived", "phase1_comment_entropy_valence.csv")
+multilabel_unclear = os.path.join("data", "derived", "phase1_comment_multilabel_unclear.csv")
+disagreement_score = os.path.join("data", "derived", "phase1_disagreement_scores.csv")
 # define variable for output file path
-complexity_features = os.path.join("data", "derived", "comment_complexity_features.csv")
+complexity_features = os.path.join("data", "derived", "phase1_derived_complexity_features.csv")
 
 # read csvs
 entropy_valence_df = pd.read_csv(entropy_valence)
