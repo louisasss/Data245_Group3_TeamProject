@@ -131,6 +131,69 @@ def evaluate_model(y_true, y_pred):
     }
     return metrics
 
+def create_metrics_table(lr_cv_results, lr_test_metrics, rf_cv_results, rf_test_metrics, output_path):
+    """
+    Create a formatted table of model metrics and save as PNG
+    """
+    import matplotlib.pyplot as plt
+    
+    # Prepare data for table
+    metrics_data = [
+        ['Metric', 'LR (CV)', 'LR (Test)', 'RF (CV)', 'RF (Test)'],
+        ['Accuracy', 
+         f"{lr_cv_results['accuracy_mean']:.3f} ± {lr_cv_results['accuracy_std']:.3f}",
+         f"{lr_test_metrics['accuracy']:.3f}",
+         f"{rf_cv_results['accuracy_mean']:.3f} ± {rf_cv_results['accuracy_std']:.3f}",
+         f"{rf_test_metrics['accuracy']:.3f}"],
+        ['Macro Precision',
+         f"{lr_cv_results['macro_precision_mean']:.3f} ± {lr_cv_results['macro_precision_std']:.3f}",
+         f"{lr_test_metrics['macro_precision']:.3f}",
+         f"{rf_cv_results['macro_precision_mean']:.3f} ± {rf_cv_results['macro_precision_std']:.3f}",
+         f"{rf_test_metrics['macro_precision']:.3f}"],
+        ['Macro Recall',
+         f"{lr_cv_results['macro_recall_mean']:.3f} ± {lr_cv_results['macro_recall_std']:.3f}",
+         f"{lr_test_metrics['macro_recall']:.3f}",
+         f"{rf_cv_results['macro_recall_mean']:.3f} ± {rf_cv_results['macro_recall_std']:.3f}",
+         f"{rf_test_metrics['macro_recall']:.3f}"],
+        ['Macro F1',
+         f"{lr_cv_results['macro_f1_mean']:.3f} ± {lr_cv_results['macro_f1_std']:.3f}",
+         f"{lr_test_metrics['macro_f1']:.3f}",
+         f"{rf_cv_results['macro_f1_mean']:.3f} ± {rf_cv_results['macro_f1_std']:.3f}",
+         f"{rf_test_metrics['macro_f1']:.3f}"],
+        ['Weighted F1',
+         f"{lr_cv_results['weighted_f1_mean']:.3f} ± {lr_cv_results['weighted_f1_std']:.3f}",
+         f"{lr_test_metrics['weighted_f1']:.3f}",
+         f"{rf_cv_results['weighted_f1_mean']:.3f} ± {rf_cv_results['weighted_f1_std']:.3f}",
+         f"{rf_test_metrics['weighted_f1']:.3f}"]
+    ]
+    
+    # Create figure
+    fig, ax = plt.subplots(figsize=(8, 3))
+    ax.axis('tight')
+    ax.axis('off')
+    
+    # Create table
+    table = ax.table(cellText=metrics_data, cellLoc='center', loc='center')
+    table.auto_set_font_size(False)
+    table.set_fontsize(10)
+    table.scale(1, 1.75)
+    
+    # Style header row
+    for i in range(5):
+        table[(0, i)].set_facecolor("#299216")
+        table[(0, i)].set_text_props(weight='bold', color='white')
+    
+    # Alternate row colors
+    for i in range(1, len(metrics_data)):
+        for j in range(5):
+            if i % 2 == 0:
+                table[(i, j)].set_facecolor('#E7E6E6')
+    
+    plt.title('Model Performance Comparison:\nLogistic Regression vs Random Forest', fontsize=14, weight='bold', pad=10)
+
+    plt.savefig(output_path, dpi=300, bbox_inches='tight')
+    plt.close()
+    print(f"Metrics table saved: {output_path}")
 
 def main():
     # 1. load data
@@ -229,9 +292,17 @@ def main():
             'test': final_rf_metrics
         }
     }
-
+    
     with open('results/model_metrics.json', 'w') as f:
         json.dump(results, f, indent=2)
+    
+    # Create metrics table
+    create_metrics_table(
+        lr_cv_results, final_lr_metrics,
+        rf_cv_results, final_rf_metrics,
+        'results/figures/metrics_table.png'
+    )
+    
     return
 
 
