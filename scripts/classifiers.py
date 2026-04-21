@@ -11,6 +11,7 @@ from sklearn.model_selection import StratifiedKFold  # For 5-fold CV
 from sklearn.preprocessing import StandardScaler  # For scaling features
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
+from xgboost import XGBClassifier
 from sklearn.metrics import classification_report, confusion_matrix, ConfusionMatrixDisplay
 
 #set random seed value
@@ -131,7 +132,7 @@ def evaluate_model(y_true, y_pred):
     }
     return metrics
 
-def create_metrics_table(lr_cv_results, lr_test_metrics, rf_cv_results, rf_test_metrics, output_path):
+def create_metrics_table(lr_cv_results, lr_test_metrics, rf_cv_results, rf_test_metrics, xgb_cv_results, xgb_test_metrics, output_path):
     """
     Create a formatted table of model metrics and save as PNG
     """
@@ -139,36 +140,46 @@ def create_metrics_table(lr_cv_results, lr_test_metrics, rf_cv_results, rf_test_
     
     # Prepare data for table
     metrics_data = [
-        ['Metric', 'LR (CV)', 'LR (Test)', 'RF (CV)', 'RF (Test)'],
+        ['Metric', 'LR (CV)', 'LR (Test)', 'RF (CV)', 'RF (Test)', 'XGB (CV)', 'XGB (Test)'],
         ['Accuracy', 
          f"{lr_cv_results['accuracy_mean']:.3f} ± {lr_cv_results['accuracy_std']:.3f}",
          f"{lr_test_metrics['accuracy']:.3f}",
          f"{rf_cv_results['accuracy_mean']:.3f} ± {rf_cv_results['accuracy_std']:.3f}",
-         f"{rf_test_metrics['accuracy']:.3f}"],
+         f"{rf_test_metrics['accuracy']:.3f}",
+         f"{xgb_cv_results['accuracy_mean']:.3f} ± {xgb_cv_results['accuracy_std']:.3f}",
+         f"{xgb_test_metrics['accuracy']:.3f}"],
         ['Macro Precision',
          f"{lr_cv_results['macro_precision_mean']:.3f} ± {lr_cv_results['macro_precision_std']:.3f}",
          f"{lr_test_metrics['macro_precision']:.3f}",
          f"{rf_cv_results['macro_precision_mean']:.3f} ± {rf_cv_results['macro_precision_std']:.3f}",
-         f"{rf_test_metrics['macro_precision']:.3f}"],
+         f"{rf_test_metrics['macro_precision']:.3f}",
+         f"{xgb_cv_results['macro_precision_mean']:.3f} ± {xgb_cv_results['macro_precision_std']:.3f}",
+         f"{xgb_test_metrics['macro_precision']:.3f}"],
         ['Macro Recall',
          f"{lr_cv_results['macro_recall_mean']:.3f} ± {lr_cv_results['macro_recall_std']:.3f}",
          f"{lr_test_metrics['macro_recall']:.3f}",
          f"{rf_cv_results['macro_recall_mean']:.3f} ± {rf_cv_results['macro_recall_std']:.3f}",
-         f"{rf_test_metrics['macro_recall']:.3f}"],
+         f"{rf_test_metrics['macro_recall']:.3f}",
+         f"{xgb_cv_results['macro_recall_mean']:.3f} ± {xgb_cv_results['macro_recall_std']:.3f}",
+         f"{xgb_test_metrics['macro_recall']:.3f}"],
         ['Macro F1',
          f"{lr_cv_results['macro_f1_mean']:.3f} ± {lr_cv_results['macro_f1_std']:.3f}",
          f"{lr_test_metrics['macro_f1']:.3f}",
          f"{rf_cv_results['macro_f1_mean']:.3f} ± {rf_cv_results['macro_f1_std']:.3f}",
-         f"{rf_test_metrics['macro_f1']:.3f}"],
+         f"{rf_test_metrics['macro_f1']:.3f}",
+         f"{xgb_cv_results['macro_f1_mean']:.3f} ± {xgb_cv_results['macro_f1_std']:.3f}",
+         f"{xgb_test_metrics['macro_f1']:.3f}"],
         ['Weighted F1',
          f"{lr_cv_results['weighted_f1_mean']:.3f} ± {lr_cv_results['weighted_f1_std']:.3f}",
          f"{lr_test_metrics['weighted_f1']:.3f}",
          f"{rf_cv_results['weighted_f1_mean']:.3f} ± {rf_cv_results['weighted_f1_std']:.3f}",
-         f"{rf_test_metrics['weighted_f1']:.3f}"]
+         f"{rf_test_metrics['weighted_f1']:.3f}",
+         f"{xgb_cv_results['weighted_f1_mean']:.3f} ± {xgb_cv_results['weighted_f1_std']:.3f}",
+         f"{xgb_test_metrics['weighted_f1']:.3f}"]
     ]
     
     # Create figure
-    fig, ax = plt.subplots(figsize=(8, 3))
+    fig, ax = plt.subplots(figsize=(12, 3))
     ax.axis('tight')
     ax.axis('off')
     
@@ -179,17 +190,17 @@ def create_metrics_table(lr_cv_results, lr_test_metrics, rf_cv_results, rf_test_
     table.scale(1, 1.75)
     
     # Style header row
-    for i in range(5):
+    for i in range(7):
         table[(0, i)].set_facecolor("#299216")
         table[(0, i)].set_text_props(weight='bold', color='white')
     
     # Alternate row colors
     for i in range(1, len(metrics_data)):
-        for j in range(5):
+        for j in range(7):
             if i % 2 == 0:
                 table[(i, j)].set_facecolor('#E7E6E6')
     
-    plt.title('Model Performance Comparison:\nLogistic Regression vs Random Forest', fontsize=14, weight='bold', pad=10)
+    plt.title('Model Performance Comparison:\nLogistic Regression vs Random Forest vs XGBoost', fontsize=14, weight='bold', pad=10)
 
     plt.savefig(output_path, dpi=300, bbox_inches='tight')
     plt.close()
@@ -229,6 +240,14 @@ def main():
     print("Random Forest CV metrics:")
     for metric, value in rf_cv_results.items():
         print(f"  {metric}: {value:.6f}")
+
+    # XGBoost CV
+    print("\nXGBoost - 5-Fold CV:")
+    xgb_model = XGBClassifier(n_estimators=100, random_state=random_seed, eval_metric='mlogloss')
+    xgb_cv_results = train_with_cv(xgb_model, X_train_scaled, y_train)
+    print("XGBoost CV metrics:")
+    for metric, value in xgb_cv_results.items():
+        print(f"  {metric}: {value:.6f}")
     
     # 4. Train final models on ALL training data
     print("\n" + "="*50)
@@ -238,11 +257,13 @@ def main():
     # create fresh model instances
     final_lr = LogisticRegression(max_iter=1000, random_state=random_seed)
     final_rf = RandomForestClassifier(n_estimators=100, random_state=random_seed)
+    final_xgb = XGBClassifier(n_estimators=100, random_state=random_seed, eval_metric='mlogloss')
 
     # train on all 90% of training data
     final_lr.fit(X_train_scaled,  y_train)
     final_rf.fit(X_train_scaled,  y_train)
-    print("Logistic Regression and Random Forest models trained on full training data set.")
+    final_xgb.fit(X_train_scaled, y_train)
+    print("Logistic Regression, Random Forest, and XGBoost models trained on full training data set.")
     
     # 5. Evaluate on holdout test set
     print("\n" + "="*50)
@@ -251,9 +272,11 @@ def main():
     # predict and evaluate on X_test_scaled
     final_lr_pred = final_lr.predict(X_test_scaled)
     final_rf_pred = final_rf.predict(X_test_scaled)
+    final_xgb_pred = final_xgb.predict(X_test_scaled)
 
-    final_lr_metrics = evaluate_model(y_test,final_lr_pred)
-    final_rf_metrics = evaluate_model(y_test,final_rf_pred)
+    final_lr_metrics = evaluate_model(y_test, final_lr_pred)
+    final_rf_metrics = evaluate_model(y_test, final_rf_pred)
+    final_xgb_metrics = evaluate_model(y_test, final_xgb_pred)
 
     print("\nLogistic Regression - Test Set Results:")
     for metric, value in final_lr_metrics.items():
@@ -263,9 +286,14 @@ def main():
     for metric, value in final_rf_metrics.items():
         print(f"{metric}: {value:.6f}")
 
+    print("\nXGBoost - Test Set Results:")
+    for metric, value in final_xgb_metrics.items():
+        print(f"{metric}: {value:.6f}")
+
     # save models
     joblib.dump(final_lr, 'models/logistic_regression_final.pkl')
     joblib.dump(final_rf, 'models/random_forest_final.pkl')
+    joblib.dump(final_xgb, 'models/xgboost_final.pkl')
     joblib.dump(scaler, 'models/scaler.pkl')
     print("\nModels saved!")
 
@@ -280,6 +308,11 @@ def main():
     plt.title("Random Forest - Test Set")
     plt.savefig('results/figures/confusion_matrix_rf.png')
     plt.close()
+    # xgboost
+    ConfusionMatrixDisplay.from_predictions(y_true=y_test, y_pred=final_xgb_pred)
+    plt.title("XGBoost - Test Set")
+    plt.savefig('results/figures/confusion_matrix_xgb.png')
+    plt.close()
 
     # save results
     results = {
@@ -290,6 +323,10 @@ def main():
         'random_forest': {
             'cv': rf_cv_results,
             'test': final_rf_metrics
+        },
+        'xgboost': {
+            'cv': xgb_cv_results,
+            'test': final_xgb_metrics
         }
     }
     
@@ -300,6 +337,7 @@ def main():
     create_metrics_table(
         lr_cv_results, final_lr_metrics,
         rf_cv_results, final_rf_metrics,
+        xgb_cv_results, final_xgb_metrics,
         'results/figures/metrics_table.png'
     )
     
