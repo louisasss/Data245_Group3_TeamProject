@@ -210,6 +210,7 @@ def main():
     # 1. load data
     try:
         df = load_data()
+        df['cluster'] = df['cluster'].replace({3: 2})
     except FileNotFoundError:
         print("Feature data not ready yet, using dummy data...")
         df = create_dummy_data()
@@ -219,6 +220,12 @@ def main():
 
     # 2. scale features function
     X_train_scaled, X_test_scaled, scaler = scale_features(X_train, X_test)
+    
+    print("\nCluster distribution (TRAIN):")
+    print(y_train.value_counts())
+
+    print("\nCluster distribution (TEST):")
+    print(y_test.value_counts())
 
     # 3. cross-validation on both models
     print("\n" + "="*50)
