@@ -68,18 +68,7 @@ def preprocess_features(df):
         print(f"Removing constant columns: {constant_cols}")
         df = df.drop(columns=constant_cols)
 
-    # remove remaining object columns
-    object_cols = df.select_dtypes(include=["object"]).columns.tolist()
-    if object_cols:
-        print(f"Removing remaining object columns: {object_cols}")
-        df = df.drop(columns=object_cols)
-
-    # convert bool columns to int
-    bool_cols = df.select_dtypes(include=["bool"]).columns
-    for col in bool_cols:
-        df[col] = df[col].astype(int)
-
-    print(f"Post-preprocessing shape: {df.shape}")
+        print(f"Post-preprocessing shape: {df.shape}")
     return df
 
 
