@@ -28,7 +28,7 @@ Phase 2: Clustering (Subreddit-Level)
 └── phase2_merge_clusters.py             → assign cluster labels to comments
 
 Phase 3: Classification (Supervised Learning)
-└── classifiers.py                       → train LR & RF, evaluate performance
+└── classifiers.py                       → train and evaluate LR & RF, XGBoost, and LightGBM performance
 ```
 
 **Output:** Trained models achieve ~36% accuracy predicting K=4 community clusters from 5 emotional complexity features.
