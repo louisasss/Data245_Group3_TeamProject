@@ -9,6 +9,7 @@ features_file = os.path.join(base_path, "phase1_derived_complexity_features.csv"
 # Cluster files
 cluster_files = {
     "k2": "cluster_labels.csv",
+    "k3": "cluster_labelsk3.csv",
     "k4": "cluster_labelsk4.csv",
     "k5": "cluster_labelsk5.csv",
 }

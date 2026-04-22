@@ -99,7 +99,10 @@ def main():
     
     # Save for K=5
     save_cluster_labels(subreddit_vectors, kmeans_results, 5, data_path, "cluster_labelsk5.csv")
-    
+
+    # Save for k = 3 (based on silhouette score))
+    save_cluster_labels(subreddit_vectors, kmeans_results, 3, data_path, "cluster_labelsk3.csv")
+
     print("\n" + "="*60)
     print("CLUSTERING ANALYSIS COMPLETE")
     print("="*60)
