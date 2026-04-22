@@ -239,7 +239,58 @@ def create_metrics_table(lr_cv_results, lr_test_metrics, rf_cv_results, rf_test_
     plt.close()
     print(f"Metrics table saved: {output_path}")
 
+def create_combined_k_comparison_plot(all_results, output_path):
+    metrics = ['macro_precision', 'macro_recall', 'macro_f1']
+    models = ['logistic_regression', 'random_forest', 'xgboost', 'lightgbm']
+    model_labels = ['LR', 'RF', 'XGB', 'LGBM']
+    
+    available_ks = sorted(all_results.keys())
+    if not available_ks:
+        return
+
+    fig, axes = plt.subplots(1, 3, figsize=(18, 6), sharey=True)
+    colors = {3: '#1f77b4', 4: '#ff7f0e'}  # Blue for K=3, Orange for K=4
+    width = 0.8 / len(available_ks)
+    x = np.arange(len(models))
+
+    # Gray, Greenish-Blue, Yellowish-Tan, Soft Purple for the zone backgrounds for each model type
+    bg_colors = ['#EAEAEA', '#D5E8D4', '#FFF2CC', '#F8CECC']
+
+    for i, metric in enumerate(metrics):
+        # Add zones that are behind the bars but in front of the gridlines
+        for idx in range(len(models)):
+            # Increased alpha to 0.5 for better visibility for the models
+            axes[i].axvspan(idx - 0.45, idx + 0.45, color=bg_colors[idx], alpha=0.5, zorder=1)
+
+        # Plot
+        for j, k_val in enumerate(available_ks):
+            offset = (j - (len(available_ks)-1)/2) * width
+            vals = [all_results[k_val][m]['test'][metric] for m in models]
+            axes[i].bar(x + offset, vals, width, label=f'K={k_val}', 
+                        color=colors.get(k_val, None), alpha=1.0, zorder=3)
+
+        # Formatting
+        axes[i].set_title(metric.replace('_', ' ').title(), fontsize=14, weight='bold')
+        axes[i].set_xlabel('Model Type', fontsize=12, weight='semibold')
+        axes[i].set_xticks(x)
+        axes[i].set_xticklabels(model_labels)
+        axes[i].set_ylim(0, 1.1)
+        
+        # Gridlines behind bars but in front of background
+        axes[i].grid(axis='y', linestyle='--', alpha=0.6, zorder=2)
+        
+        if i == 0:
+            axes[i].set_ylabel('Performance Score', fontsize=12, weight='semibold')
+        axes[i].legend(loc='upper right', frameon=True, facecolor='white', framealpha=0.9)
+
+    plt.suptitle('Model Performance Comparison: K=3 vs K=4 (Macro Metrics)', fontsize=16, weight='bold', y=1.02)
+    plt.tight_layout()
+    plt.savefig(output_path, dpi=300, bbox_inches='tight')
+    plt.close()
+
 def main():
+    # Initialize dictionary to store results for both K values
+    all_k_results = {}
     # Test both K=3 and K=4
     for k in [3, 4]:
         print(f"\n{'='*60}")
@@ -409,6 +460,10 @@ def main():
             }
         }
 
+        # Save to the dictionary using the current k
+        all_k_results[k] = results 
+        print(f"Successfully stored results for K={k}")
+
         with open(f'results/k{k}/model_metrics.json', 'w') as f:
             json.dump(results, f, indent=2)
 
@@ -421,7 +476,20 @@ def main():
             f'results/k{k}/metrics_table.png',
             k
         )
-    
+
+        # Generate the combined plot after the loop finishes
+        print("\n" + "="*50)
+        print("GENERATING COMBINED K-COMPARISON CHART")
+        print("="*50)
+        
+        # Create a global figures directory if it doesn't exist
+        Path('results/figures').mkdir(parents=True, exist_ok=True)
+        
+        if all_k_results:
+            create_combined_k_comparison_plot(all_k_results, 'results/figures/combined_k_comparison.png')
+        else:
+            print("No K-results were stored in all_k_results. Check your loop logic.")
+        
     return
 
 
