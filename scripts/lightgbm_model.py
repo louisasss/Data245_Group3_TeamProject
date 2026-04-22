@@ -227,6 +227,7 @@ def main():
     # 1. load data
     try:
         df = load_data()
+        df['cluster'] = df['cluster'].replace({3: 2})
     except FileNotFoundError:
         print("Feature data not ready yet, using dummy data...")
         df = create_dummy_data()
