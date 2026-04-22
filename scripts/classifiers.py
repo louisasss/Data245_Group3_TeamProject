@@ -250,23 +250,31 @@ def create_combined_k_comparison_plot(all_results, output_path):
 
     fig, axes = plt.subplots(1, 3, figsize=(18, 6), sharey=True)
     colors = {3: '#1f77b4', 4: '#ff7f0e'}  # Blue for K=3, Orange for K=4
+    baselines = {3: 0.333, 4: 0.25}        # Random chance baselines
+    
     width = 0.8 / len(available_ks)
     x = np.arange(len(models))
 
-    # Gray, Greenish-Blue, Yellowish-Tan, Soft Purple for the zone backgrounds for each model type
     bg_colors = ['#EAEAEA', '#D5E8D4', '#FFF2CC', '#F8CECC']
 
     for i, metric in enumerate(metrics):
-        # Add zones that are behind the bars but in front of the gridlines
+        # Add background zones for each model type
         for idx in range(len(models)):
-            # Increased alpha to 0.5 for better visibility for the models
             axes[i].axvspan(idx - 0.45, idx + 0.45, color=bg_colors[idx], alpha=0.5, zorder=1)
 
-        # Plot
+        # Plot the horizontal baseline lines
+        if 3 in available_ks:
+            axes[i].axhline(y=baselines[3], color=colors[3], linestyle='--', 
+                            linewidth=1.5, label='K=3 Random Baseline (0.33)', zorder=2)
+        if 4 in available_ks:
+            axes[i].axhline(y=baselines[4], color=colors[4], linestyle='--', 
+                            linewidth=1.5, label='K=4 Random Baseline (0.25)', zorder=2)
+
+        # Plot bars
         for j, k_val in enumerate(available_ks):
             offset = (j - (len(available_ks)-1)/2) * width
             vals = [all_results[k_val][m]['test'][metric] for m in models]
-            axes[i].bar(x + offset, vals, width, label=f'K={k_val}', 
+            axes[i].bar(x + offset, vals, width, label=f'K={k_val} Result', 
                         color=colors.get(k_val, None), alpha=1.0, zorder=3)
 
         # Formatting
@@ -276,14 +284,15 @@ def create_combined_k_comparison_plot(all_results, output_path):
         axes[i].set_xticklabels(model_labels)
         axes[i].set_ylim(0, 1.1)
         
-        # Gridlines behind bars but in front of background
-        axes[i].grid(axis='y', linestyle='--', alpha=0.6, zorder=2)
+        axes[i].grid(axis='y', linestyle=':', alpha=0.4, zorder=0)
         
         if i == 0:
             axes[i].set_ylabel('Performance Score', fontsize=12, weight='semibold')
-        axes[i].legend(loc='upper right', frameon=True, facecolor='white', framealpha=0.9)
+        
+        # Adjust legend to show baselines clearly
+        axes[i].legend(loc='upper right', fontsize=9, frameon=True, facecolor='white', framealpha=0.9)
 
-    plt.suptitle('Model Performance Comparison: K=3 vs K=4 (Macro Metrics)', fontsize=16, weight='bold', y=1.02)
+    plt.suptitle('Model Performance Comparison: K=3 vs K=4 with Random Baselines', fontsize=16, weight='bold', y=1.02)
     plt.tight_layout()
     plt.savefig(output_path, dpi=300, bbox_inches='tight')
     plt.close()
