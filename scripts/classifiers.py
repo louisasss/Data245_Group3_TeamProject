@@ -22,20 +22,6 @@ random_seed = 42
 np.random.seed(42)
 
 
-def create_dummy_data():
-    """
-    Create temporary dummy data for testing
-    """
-    df = pd.DataFrame({
-        'emotional_entropy': np.random.random(100),
-        'valence_mixing': np.random.random(100),
-        'multi_label_count': np.random.randint(0, 28, 100),
-        'example_very_unclear': np.random.randint(0, 2, 100),
-        'annotator_disagreement_score': np.random.randint(0, 28, 100),
-        'cluster': np.random.randint(0, 4, 100)
-    })
-    return df
-
 def load_data(filepath=None):
     """
     Load feature-engineered dataset from CSV
@@ -56,7 +42,7 @@ def load_data(filepath=None):
     - cluster
     """
     if filepath is None:
-        filepath = Path('data') / 'derived' / 'comments_with_clusters_k3.csv'
+        filepath = Path('data') / 'derived' / 'comments_with_clusters_k4.csv'
     df = pd.read_csv(filepath)
     return df
 
@@ -65,12 +51,6 @@ def preprocess_features(df):
     Clean and transform dataframe into model-ready format
     """
     df = df.copy()
-
-    # encode subreddit if present
-    if "subreddit" in df.columns:
-        print("Encoding 'subreddit'...")
-        le = LabelEncoder()
-        df["subreddit"] = le.fit_transform(df["subreddit"].astype(str))
 
     # remove constant columns except target if present
     constant_cols = [col for col in df.columns if col != "cluster" and df[col].nunique() <= 1]
@@ -83,7 +63,7 @@ def load_and_prep_data(df):
     """"
     Splits data into 90% train, 10% test (stratified by cluster)
     """
-    drop_cols = ['cluster', 'comment_id', 'unclear_fraction']
+    drop_cols = ['cluster', 'comment_id', 'unclear_fraction', 'subreddit']
     existing_drop_cols = [c for c in drop_cols if c in df.columns]
     X = df.drop(existing_drop_cols, axis=1)
 
@@ -175,7 +155,7 @@ def evaluate_model(y_true, y_pred):
     }
     return metrics
 
-def create_metrics_table(lr_cv_results, lr_test_metrics, rf_cv_results, rf_test_metrics, xgb_cv_results, xgb_test_metrics, lgbm_cv_results, lgbm_test_metrics, output_path):
+def create_metrics_table(lr_cv_results, lr_test_metrics, rf_cv_results, rf_test_metrics, xgb_cv_results, xgb_test_metrics, lgbm_cv_results, lgbm_test_metrics, output_path, k):
     """
     Create a formatted table of model metrics and save as PNG
     """
@@ -253,181 +233,194 @@ def create_metrics_table(lr_cv_results, lr_test_metrics, rf_cv_results, rf_test_
             if i % 2 == 0:
                 table[(i, j)].set_facecolor('#E7E6E6')
 
-    plt.title('Model Performance Comparison:\nLogistic Regression vs Random Forest vs XGBoost vs LightGBM', fontsize=14, weight='bold', pad=10)
+    plt.title(f'Model Performance Comparison (K={k}):\nLogistic Regression vs Random Forest vs XGBoost vs LightGBM', fontsize=14, weight='bold', pad=10)
 
     plt.savefig(output_path, dpi=300, bbox_inches='tight')
     plt.close()
     print(f"Metrics table saved: {output_path}")
 
 def main():
-    # 1. load data
-    try:
-        df = load_data()
-        df['cluster'] = df['cluster'].replace({3: 2})
-    except FileNotFoundError:
-        print("Feature data not ready yet, using dummy data...")
-        df = create_dummy_data()
-    df = preprocess_features(df)
-    
-    # prep data
-    X_train, X_test, y_train, y_test = load_and_prep_data(df)
+    # Test both K=3 and K=4
+    for k in [3, 4]:
+        print(f"\n{'='*60}")
+        print(f"RUNNING MODELS FOR K={k} CLUSTERS")
+        print(f"{'='*60}\n")
+        
+        # Set filepath based on k
+        filepath = Path('data') / 'derived' / f'comments_with_clusters_k{k}.csv'
+        
+        # Create output directory
+        Path(f'results/k{k}').mkdir(parents=True, exist_ok=True)
+        
+        # Load data
+        try:
+            df = load_data(filepath)
+        except FileNotFoundError:
+            print(f"File not found: {filepath}, skipping K={k}")
+            continue
 
-    # 2. scale features function
-    X_train_scaled, X_test_scaled, scaler = scale_features(X_train, X_test)
-    
-    print("\nCluster distribution (TRAIN):")
-    print(y_train.value_counts())
+        df = preprocess_features(df)
 
-    print("\nCluster distribution (TEST):")
-    print(y_test.value_counts())
+        # prep data
+        X_train, X_test, y_train, y_test = load_and_prep_data(df)
 
-    # 3. cross-validation on both models
-    print("\n" + "="*50)
-    print("5-Fold Cross-Validation")
-    print("="*50)
-    
-    # Logistic Regression CV
-    print("\nLogistic Regression - 5-Fold CV:")
-    lr_model = LogisticRegression(max_iter=1000, random_state=random_seed)
-    lr_cv_results = train_with_cv(lr_model, X_train_scaled, y_train)
-    print("Logistic Regression CV metrics:")
-    for metric, value in lr_cv_results.items():
-        print(f"  {metric}: {value:.6f}")
+        # 2. scale features function
+        X_train_scaled, X_test_scaled, scaler = scale_features(X_train, X_test)
 
-    # Random Forest CV
-    print("\nRandom Forest - 5-Fold CV:")
-    rf_model = RandomForestClassifier(n_estimators=100, random_state=random_seed)
-    rf_cv_results = train_with_cv(rf_model, X_train_scaled, y_train)
-    print("Random Forest CV metrics:")
-    for metric, value in rf_cv_results.items():
-        print(f"  {metric}: {value:.6f}")
+        print("\nCluster distribution (TRAIN):")
+        print(y_train.value_counts())
 
-    # XGBoost CV
-    print("\nXGBoost - 5-Fold CV:")
-    xgb_model = XGBClassifier(n_estimators=100, random_state=random_seed, eval_metric='mlogloss')
-    xgb_cv_results = train_with_cv(xgb_model, X_train_scaled, y_train)
-    print("XGBoost CV metrics:")
-    for metric, value in xgb_cv_results.items():
-        print(f"  {metric}: {value:.6f}")
+        print("\nCluster distribution (TEST):")
+        print(y_test.value_counts())
 
-    # LightGBM CV
-    print("\nLightGBM - 5-Fold CV:")
-    lgbm_model = build_lightgbm_model(y_train)
-    lgbm_cv_results = train_with_cv(lgbm_model, X_train_scaled, y_train)
-    print("LightGBM CV metrics:")
-    for metric, value in lgbm_cv_results.items():
-        print(f"  {metric}: {value:.6f}")
-    # 4. Train final models on ALL training data
-    print("\n" + "="*50)
-    print("FINAL MODEL TRAINING")
-    print("="*50)
-    # retrain both models on full X_train_scaled
-    # create fresh model instances
-    final_lr = LogisticRegression(max_iter=1000, random_state=random_seed)
-    final_rf = RandomForestClassifier(n_estimators=100, random_state=random_seed)
-    final_xgb = XGBClassifier(n_estimators=100, random_state=random_seed, eval_metric='mlogloss')
-    final_lgbm = build_lightgbm_model(y_train)
-    # train on all 90% of training data
-    final_lr.fit(X_train_scaled,  y_train)
-    final_rf.fit(X_train_scaled,  y_train)
-    final_xgb.fit(X_train_scaled, y_train)
-    final_lgbm.fit(X_train_scaled, y_train)
-    print("Logistic Regression, Random Forest, XGBoost, and LightGBM models trained on full training data set.")
-    
-    # 5. Evaluate on holdout test set
-    print("\n" + "="*50)
-    print("HOLDOUT TEST SET EVALUATION")
-    print("="*50)
-    # predict and evaluate on X_test_scaled
-    final_lr_pred = final_lr.predict(X_test_scaled)
-    final_rf_pred = final_rf.predict(X_test_scaled)
-    final_xgb_pred = final_xgb.predict(X_test_scaled)
-    final_lgbm_pred = final_lgbm.predict(X_test_scaled)
+        # 3. cross-validation on both models
+        print("\n" + "="*50)
+        print("5-Fold Cross-Validation")
+        print("="*50)
 
-    final_lr_metrics = evaluate_model(y_test, final_lr_pred)
-    final_rf_metrics = evaluate_model(y_test, final_rf_pred)
-    final_xgb_metrics = evaluate_model(y_test, final_xgb_pred)
-    final_lgbm_metrics = evaluate_model(y_test, final_lgbm_pred)
+        # Logistic Regression CV
+        print("\nLogistic Regression - 5-Fold CV:")
+        lr_model = LogisticRegression(max_iter=1000, random_state=random_seed)
+        lr_cv_results = train_with_cv(lr_model, X_train_scaled, y_train)
+        print("Logistic Regression CV metrics:")
+        for metric, value in lr_cv_results.items():
+            print(f"  {metric}: {value:.6f}")
 
-    print("\nLogistic Regression - Test Set Results:")
-    for metric, value in final_lr_metrics.items():
-        print(f"{metric}: {value:.6f}")
+        # Random Forest CV
+        print("\nRandom Forest - 5-Fold CV:")
+        rf_model = RandomForestClassifier(n_estimators=100, random_state=random_seed)
+        rf_cv_results = train_with_cv(rf_model, X_train_scaled, y_train)
+        print("Random Forest CV metrics:")
+        for metric, value in rf_cv_results.items():
+            print(f"  {metric}: {value:.6f}")
 
-    print("\nRandom Forest - Test Set Results:")
-    for metric, value in final_rf_metrics.items():
-        print(f"{metric}: {value:.6f}")
+        # XGBoost CV
+        print("\nXGBoost - 5-Fold CV:")
+        xgb_model = XGBClassifier(n_estimators=100, random_state=random_seed, eval_metric='mlogloss')
+        xgb_cv_results = train_with_cv(xgb_model, X_train_scaled, y_train)
+        print("XGBoost CV metrics:")
+        for metric, value in xgb_cv_results.items():
+            print(f"  {metric}: {value:.6f}")
 
-    print("\nXGBoost - Test Set Results:")
-    for metric, value in final_xgb_metrics.items():
-        print(f"{metric}: {value:.6f}")
+        # LightGBM CV
+        print("\nLightGBM - 5-Fold CV:")
+        lgbm_model = build_lightgbm_model(y_train)
+        lgbm_cv_results = train_with_cv(lgbm_model, X_train_scaled, y_train)
+        print("LightGBM CV metrics:")
+        for metric, value in lgbm_cv_results.items():
+            print(f"  {metric}: {value:.6f}")
+        # 4. Train final models on ALL training data
+        print("\n" + "="*50)
+        print("FINAL MODEL TRAINING")
+        print("="*50)
+        # retrain both models on full X_train_scaled
+        # create fresh model instances
+        final_lr = LogisticRegression(max_iter=1000, random_state=random_seed)
+        final_rf = RandomForestClassifier(n_estimators=100, random_state=random_seed)
+        final_xgb = XGBClassifier(n_estimators=100, random_state=random_seed, eval_metric='mlogloss')
+        final_lgbm = build_lightgbm_model(y_train)
+        # train on all 90% of training data
+        final_lr.fit(X_train_scaled,  y_train)
+        final_rf.fit(X_train_scaled,  y_train)
+        final_xgb.fit(X_train_scaled, y_train)
+        final_lgbm.fit(X_train_scaled, y_train)
+        print("Logistic Regression, Random Forest, XGBoost, and LightGBM models trained on full training data set.")
 
-    print("\nLightGBM - Test Set Results:")
-    for metric, value in final_lgbm_metrics.items():
-        print(f"{metric}: {value:.6f}")
+        # 5. Evaluate on holdout test set
+        print("\n" + "="*50)
+        print("HOLDOUT TEST SET EVALUATION")
+        print("="*50)
+        # predict and evaluate on X_test_scaled
+        final_lr_pred = final_lr.predict(X_test_scaled)
+        final_rf_pred = final_rf.predict(X_test_scaled)
+        final_xgb_pred = final_xgb.predict(X_test_scaled)
+        final_lgbm_pred = final_lgbm.predict(X_test_scaled)
 
-    # save models
-    joblib.dump(final_lr, 'models/logistic_regression_final.pkl')
-    joblib.dump(final_rf, 'models/random_forest_final.pkl')
-    joblib.dump(final_xgb, 'models/xgboost_final.pkl')
-    joblib.dump(scaler, 'models/scaler.pkl')
-    joblib.dump(final_lgbm, 'models/lightgbm_final.pkl')
+        final_lr_metrics = evaluate_model(y_test, final_lr_pred)
+        final_rf_metrics = evaluate_model(y_test, final_rf_pred)
+        final_xgb_metrics = evaluate_model(y_test, final_xgb_pred)
+        final_lgbm_metrics = evaluate_model(y_test, final_lgbm_pred)
 
-    print("\nModels saved!")
+        print("\nLogistic Regression - Test Set Results:")
+        for metric, value in final_lr_metrics.items():
+            print(f"{metric}: {value:.6f}")
 
-    # 6. Confusion matrices
-    # logistic regression
-    ConfusionMatrixDisplay.from_predictions(y_true=y_test, y_pred=final_lr_pred)
-    plt.title("Logistic Regression - Test Set")
-    plt.savefig('results/figures/confusion_matrix_lr.png')
-    plt.close()
-    # random forest
-    ConfusionMatrixDisplay.from_predictions(y_true=y_test, y_pred=final_rf_pred)
-    plt.title("Random Forest - Test Set")
-    plt.savefig('results/figures/confusion_matrix_rf.png')
-    plt.close()
-    # xgboost
-    ConfusionMatrixDisplay.from_predictions(y_true=y_test, y_pred=final_xgb_pred)
-    plt.title("XGBoost - Test Set")
-    plt.savefig('results/figures/confusion_matrix_xgb.png')
-    plt.close()
+        print("\nRandom Forest - Test Set Results:")
+        for metric, value in final_rf_metrics.items():
+            print(f"{metric}: {value:.6f}")
 
-    # lightgbm
-    ConfusionMatrixDisplay.from_predictions(y_true=y_test, y_pred=final_lgbm_pred)
-    plt.title("LightGBM - Test Set")
-    plt.savefig('results/figures/confusion_matrix_lgbm.png')
-    plt.close()
+        print("\nXGBoost - Test Set Results:")
+        for metric, value in final_xgb_metrics.items():
+            print(f"{metric}: {value:.6f}")
 
-    # save results
-    results = {
-        'logistic_regression': {
-            'cv': lr_cv_results,
-            'test': final_lr_metrics
-        },
-        'random_forest': {
-            'cv': rf_cv_results,
-            'test': final_rf_metrics
-        },
-        'xgboost': {
-            'cv': xgb_cv_results,
-            'test': final_xgb_metrics
-        },
-        'lightgbm': {
-            'cv': lgbm_cv_results,
-            'test': final_lgbm_metrics
+        print("\nLightGBM - Test Set Results:")
+        for metric, value in final_lgbm_metrics.items():
+            print(f"{metric}: {value:.6f}")
+
+        # save models
+        joblib.dump(final_lr, f'models/logistic_regression_final_k{k}.pkl')
+        joblib.dump(final_rf, f'models/random_forest_final_k{k}.pkl')
+        joblib.dump(final_xgb, f'models/xgboost_final_k{k}.pkl')
+        joblib.dump(scaler, f'models/scaler_k{k}.pkl')
+        joblib.dump(final_lgbm, f'models/lightgbm_final_k{k}.pkl')
+
+        print("\nModels saved!")
+
+        # 6. Confusion matrices
+        # logistic regression
+        ConfusionMatrixDisplay.from_predictions(y_true=y_test, y_pred=final_lr_pred)
+        plt.title("Logistic Regression - Test Set")
+        plt.savefig(f'results/k{k}/confusion_matrix_lr.png')
+        plt.close()
+        # random forest
+        ConfusionMatrixDisplay.from_predictions(y_true=y_test, y_pred=final_rf_pred)
+        plt.title("Random Forest - Test Set")
+        plt.savefig(f'results/k{k}/confusion_matrix_rf.png')
+        plt.close()
+        # xgboost
+        ConfusionMatrixDisplay.from_predictions(y_true=y_test, y_pred=final_xgb_pred)
+        plt.title("XGBoost - Test Set")
+        plt.savefig(f'results/k{k}/confusion_matrix_xgb.png')
+        plt.close()
+
+        # lightgbm
+        ConfusionMatrixDisplay.from_predictions(y_true=y_test, y_pred=final_lgbm_pred)
+        plt.title("LightGBM - Test Set")
+        plt.savefig(f'results/k{k}/confusion_matrix_lgbm.png')
+        plt.close()
+
+        # save results
+        results = {
+            'logistic_regression': {
+                'cv': lr_cv_results,
+                'test': final_lr_metrics
+            },
+            'random_forest': {
+                'cv': rf_cv_results,
+                'test': final_rf_metrics
+            },
+            'xgboost': {
+                'cv': xgb_cv_results,
+                'test': final_xgb_metrics
+            },
+            'lightgbm': {
+                'cv': lgbm_cv_results,
+                'test': final_lgbm_metrics
+            }
         }
-    }
-    
-    with open('results/model_metrics.json', 'w') as f:
-        json.dump(results, f, indent=2)
-    
-    # Create metrics table
-    create_metrics_table(
-        lr_cv_results, final_lr_metrics,
-        rf_cv_results, final_rf_metrics,
-        xgb_cv_results, final_xgb_metrics,
-        lgbm_cv_results, final_lgbm_metrics,
-        'results/figures/metrics_table.png'
-    )
+
+        with open(f'results/k{k}/model_metrics.json', 'w') as f:
+            json.dump(results, f, indent=2)
+
+        # Create metrics table
+        create_metrics_table(
+            lr_cv_results, final_lr_metrics,
+            rf_cv_results, final_rf_metrics,
+            xgb_cv_results, final_xgb_metrics,
+            lgbm_cv_results, final_lgbm_metrics,
+            f'results/k{k}/metrics_table.png',
+            k
+        )
     
     return
 

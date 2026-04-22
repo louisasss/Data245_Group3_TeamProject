@@ -1,0 +1,110 @@
+{
+  "logistic_regression": {
+    "cv": {
+      "accuracy_mean": 0.35861645651991386,
+      "accuracy_std": 0.0036055428042200692,
+      "macro_precision_mean": 0.27066196285589206,
+      "macro_precision_std": 0.007470397252382179,
+      "macro_recall_mean": 0.2722479382810693,
+      "macro_recall_std": 0.0025935679236406637,
+      "macro_f1_mean": 0.23314538829970677,
+      "macro_f1_std": 0.0025513316446799847,
+      "weighted_precision_mean": 0.344414400749928,
+      "weighted_precision_std": 0.008912305378752396,
+      "weighted_recall_mean": 0.35861645651991386,
+      "weighted_recall_std": 0.0036055428042200692,
+      "weighted_f1_mean": 0.30546111896688943,
+      "weighted_f1_std": 0.0031144376001562423
+    },
+    "test": {
+      "accuracy": 0.3659083074801793,
+      "macro_precision": 0.28787322478567723,
+      "macro_recall": 0.27813792155840805,
+      "macro_f1": 0.23977359158978384,
+      "weighted_precision": 0.3650853434058261,
+      "weighted_recall": 0.3659083074801793,
+      "weighted_f1": 0.31369298130152207
+    }
+  },
+  "random_forest": {
+    "cv": {
+      "accuracy_mean": 0.35581994913053006,
+      "accuracy_std": 0.002890535919447719,
+      "macro_precision_mean": 0.26423148720377826,
+      "macro_precision_std": 0.005544280471899517,
+      "macro_recall_mean": 0.2700133228066812,
+      "macro_recall_std": 0.0020221677300800885,
+      "macro_f1_mean": 0.23003769468538313,
+      "macro_f1_std": 0.0028739500057094938,
+      "weighted_precision_mean": 0.3367415627144818,
+      "weighted_precision_std": 0.006563979865975761,
+      "weighted_recall_mean": 0.35581994913053006,
+      "weighted_recall_std": 0.002890535919447719,
+      "weighted_f1_mean": 0.30166045061292274,
+      "weighted_f1_std": 0.003364429003704795
+    },
+    "test": {
+      "accuracy": 0.3638400551533954,
+      "macro_precision": 0.2864555554044861,
+      "macro_recall": 0.2764631935382707,
+      "macro_f1": 0.2382928591786232,
+      "weighted_precision": 0.36324025199768045,
+      "weighted_recall": 0.3638400551533954,
+      "weighted_f1": 0.31181391416408455
+    }
+  },
+  "xgboost": {
+    "cv": {
+      "accuracy_mean": 0.35591572356272816,
+      "accuracy_std": 0.0028931331417186255,
+      "macro_precision_mean": 0.26366041709235877,
+      "macro_precision_std": 0.004896495913424766,
+      "macro_recall_mean": 0.27008272503398545,
+      "macro_recall_std": 0.002043696964915385,
+      "macro_f1_mean": 0.22998278933242866,
+      "macro_f1_std": 0.003949883576057424,
+      "weighted_precision_mean": 0.33607887303014794,
+      "weighted_precision_std": 0.005806001782748842,
+      "weighted_recall_mean": 0.35591572356272816,
+      "weighted_recall_std": 0.0028931331417186255,
+      "weighted_f1_mean": 0.30160521050061595,
+      "weighted_f1_std": 0.004551641702484957
+    },
+    "test": {
+      "accuracy": 0.3640124095139607,
+      "macro_precision": 0.2869989825060386,
+      "macro_recall": 0.27659511965964273,
+      "macro_f1": 0.2383887246138977,
+      "weighted_precision": 0.36388484771493507,
+      "weighted_recall": 0.3640124095139607,
+      "weighted_f1": 0.3119374752688184
+    }
+  },
+  "lightgbm": {
+    "cv": {
+      "accuracy_mean": 0.35601148698826857,
+      "accuracy_std": 0.0027427117759325735,
+      "macro_precision_mean": 0.26456350777685084,
+      "macro_precision_std": 0.004854144247240264,
+      "macro_recall_mean": 0.2701517339074336,
+      "macro_recall_std": 0.0019337348258623235,
+      "macro_f1_mean": 0.22995495332664304,
+      "macro_f1_std": 0.0039222213242376186,
+      "weighted_precision_mean": 0.3371357986403256,
+      "weighted_precision_std": 0.005735349419753815,
+      "weighted_recall_mean": 0.35601148698826857,
+      "weighted_recall_std": 0.0027427117759325735,
+      "weighted_f1_mean": 0.30157635664087,
+      "weighted_f1_std": 0.004510258413700441
+    },
+    "test": {
+      "accuracy": 0.3638400551533954,
+      "macro_precision": 0.28750238809509426,
+      "macro_recall": 0.27647832624042806,
+      "macro_f1": 0.23844337517020914,
+      "weighted_precision": 0.3644502171736505,
+      "weighted_recall": 0.3638400551533954,
+      "weighted_f1": 0.3119731226819345
+    }
+  }
+}
