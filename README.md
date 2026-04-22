@@ -135,10 +135,10 @@ python scripts/classifiers.py
 
 ## Team Members
 
-- **Natalie Leung** - Feature engineering (entropy, valence), K-means clustering
+- **Natalie Leung** - Feature engineering (entropy, valence), K-means clustering, classifier training (XGBoost)
 - **Sang Ah Lee** - Feature engineering (disagreement scoring), clustering analysis (K-selection, elbow plot), data visualization  
 - **Louisa Stumpf** - Pipeline integration, classifier training (Logistic Regression, Random Forest), GitHub management
-- **Ananya Yallapragada** - Feature engineering (multi-label count, unclear flag), data processing (comment-level aggregation, cluster merging)
+- **Ananya Yallapragada** - Feature engineering (multi-label count, unclear flag), data processing (comment-level aggregation, cluster merging), classifier training (LightGBM)
 
 
 ## Acknowledgments
