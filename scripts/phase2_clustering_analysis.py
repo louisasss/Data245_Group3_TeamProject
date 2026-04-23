@@ -91,7 +91,7 @@ def main():
     print("SAVING CLUSTER LABELS")
     print("="*60)
     
-    # Save for optimal K (K=2)
+    # Save for optimal K
     save_cluster_labels(subreddit_vectors, kmeans_results, optimal_k, data_path, "cluster_labels.csv")
     
     # Save for K=4 (your project's chosen K)
