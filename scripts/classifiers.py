@@ -395,6 +395,21 @@ def main():
         final_rf_pred = final_rf.predict(X_test_scaled)
         final_xgb_pred = final_xgb.predict(X_test_scaled)
         final_lgbm_pred = final_lgbm.predict(X_test_scaled)
+        
+        # to save predicted and ground truth 
+        pred_dir = Path(f'results/k{k}/predictions')
+        pred_dir.mkdir(parents=True, exist_ok=True)
+
+        # true labels (only once per k)
+        pd.DataFrame(y_test).to_csv(pred_dir / f'y_true_k{k}.csv', index=False)
+
+        # predictions per model
+        pd.DataFrame(final_lr_pred).to_csv(pred_dir / f'y_pred_logistic_regression_k{k}.csv', index=False)
+        pd.DataFrame(final_rf_pred).to_csv(pred_dir / f'y_pred_random_forest_k{k}.csv', index=False)
+        pd.DataFrame(final_xgb_pred).to_csv(pred_dir / f'y_pred_xgboost_k{k}.csv', index=False)
+        pd.DataFrame(final_lgbm_pred).to_csv(pred_dir / f'y_pred_lightgbm_k{k}.csv', index=False)
+
+        print(f"Saved predictions for K={k}")
 
         final_lr_metrics = evaluate_model(y_test, final_lr_pred)
         final_rf_metrics = evaluate_model(y_test, final_rf_pred)
