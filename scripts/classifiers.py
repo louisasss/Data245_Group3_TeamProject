@@ -63,6 +63,7 @@ def load_and_prep_data(df):
     """"
     Splits data into 90% train, 10% test (stratified by cluster)
     """
+    df = df.set_index('comment_id')
     drop_cols = ['cluster', 'comment_id', 'unclear_fraction', 'subreddit']
     existing_drop_cols = [c for c in drop_cols if c in df.columns]
     X = df.drop(existing_drop_cols, axis=1)
@@ -401,13 +402,20 @@ def main():
         pred_dir.mkdir(parents=True, exist_ok=True)
 
         # true labels (only once per k)
-        pd.DataFrame(y_test).to_csv(pred_dir / f'y_true_k{k}.csv', index=False)
+        pd.DataFrame(y_test).to_csv(pred_dir / f'y_true_k{k}.csv', index=True)
 
         # predictions per model
-        pd.DataFrame(final_lr_pred).to_csv(pred_dir / f'y_pred_logistic_regression_k{k}.csv', index=False)
-        pd.DataFrame(final_rf_pred).to_csv(pred_dir / f'y_pred_random_forest_k{k}.csv', index=False)
-        pd.DataFrame(final_xgb_pred).to_csv(pred_dir / f'y_pred_xgboost_k{k}.csv', index=False)
-        pd.DataFrame(final_lgbm_pred).to_csv(pred_dir / f'y_pred_lightgbm_k{k}.csv', index=False)
+        pd.DataFrame(final_lr_pred, index=X_test.index, columns=['cluster']).to_csv(pred_dir / f'y_pred_logistic_regression_k{k}.csv', index=True
+        )
+        pd.DataFrame(final_rf_pred, index=X_test.index, columns=['cluster']).to_csv(
+            pred_dir / f'y_pred_random_forest_k{k}.csv', index=True
+        )
+        pd.DataFrame(final_xgb_pred, index=X_test.index, columns=['cluster']).to_csv(
+            pred_dir / f'y_pred_xgboost_k{k}.csv', index=True
+        )
+        pd.DataFrame(final_lgbm_pred, index=X_test.index, columns=['cluster']).to_csv(
+            pred_dir / f'y_pred_lightgbm_k{k}.csv', index=True
+        )
 
         print(f"Saved predictions for K={k}")
 

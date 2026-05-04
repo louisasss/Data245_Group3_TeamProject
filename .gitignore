@@ -40,3 +40,7 @@ ENV/
 
 # MyPy cache
 .mypy_cache/
+
+# Backups
+models_backup/
+results_backup/

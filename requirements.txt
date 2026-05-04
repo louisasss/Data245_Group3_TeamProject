@@ -9,3 +9,4 @@ jupyter
 pyarrow
 lightgbm
 xgboost
+streamlit
