@@ -8,8 +8,9 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import classification_report
+import plotly.graph_objects as go
 
-from cluster_profiles import CLUSTER_PROFILES
+from cluster_profiles import CLUSTER_PROFILES, CLUSTER_PAIRINGS
 
 BASE_DIR = Path(__file__).resolve().parents[1]
 MODELS_DIR = BASE_DIR / "models"
@@ -390,30 +391,113 @@ with tab4:
                             )
 
     with st.container(border=True):
-        st.markdown("### Cluster Definitions")
-        st.caption(f"How the K={k} clusters are characterized.")
+        st.markdown("### Cluster Definitions Across K Values")
+        st.caption("Compare how the same community types persist across K=3 and K=4.")
         
-        n_clusters = len(CLUSTER_PROFILES[k])
-        cols = st.columns(n_clusters)
-        for i, cluster_id in enumerate(sorted(CLUSTER_PROFILES[k].keys())):
-            is_true = cluster_id == int(row["cluster"])
-            with cols[i]:
-                render_cluster_profile(k, cluster_id)
-                if is_true:
-                    st.markdown(
-                        "<div style='background:#FEF3D9; padding:8px; border-radius:8px; "
-                        "border:2px solid #F59E0B; text-align:center; "
-                        "font-weight:600; color:#92400E; margin-bottom:8px;'>"
-                        "⭐ True Cluster"
-                        "</div>",
-                        unsafe_allow_html=True,
-                    )
+        # Find the longer K
+        n_cols = max(len(CLUSTER_PROFILES[3]), len(CLUSTER_PROFILES[4]))
+        
+        # K=3 row
+        st.markdown("**K=3 clusters**")
+        cols_k3 = st.columns(n_cols)
+        for col_idx, (theme, k3_id, k4_id) in enumerate(CLUSTER_PAIRINGS):
+            with cols_k3[col_idx]:
+                if k3_id is not None:
+                    render_cluster_profile(3, k3_id)
+                else:
+                    st.empty()  # placeholder for orphan column
+        
+        st.divider()
+        
+        # K=4 row
+        st.markdown("**K=4 clusters**")
+        cols_k4 = st.columns(n_cols)
+        for col_idx, (theme, k3_id, k4_id) in enumerate(CLUSTER_PAIRINGS):
+            with cols_k4[col_idx]:
+                if k4_id is not None:
+                    render_cluster_profile(4, k4_id)
+                else:
+                    st.empty()
 
+    with st.container(border=True):
+        st.markdown("### Cluster Persistence Across K Values")
+        st.caption(
+            "How subreddits flow between K=3 and K=4 clusters. "
+            "Wider bands = more subreddits taking that path. "
+            "Mental Health persists perfectly; mainstream subreddits get reorganized."
+        )
+
+        # Node order: K=3 clusters first (indices 0-2), then K=4 clusters (indices 3-6)
+        node_labels = [
+            "K=3 Cluster 0\nMental Health",
+            "K=3 Cluster 1\nDiscussion",
+            "K=3 Cluster 2\nMainstream",
+            "K=4 Cluster 0\nMixed",
+            "K=4 Cluster 1\nMixed Discussion",
+            "K=4 Cluster 2\nMixed Mainstream",
+            "K=4 Cluster 3\nMental Health",
+        ]
+
+        # Node colors — match left and right side, highlight Mental Health
+        node_colors = [
+            "#7C3AED",  # K=3 c0 — Mental Health (purple)
+            "#10B981",  # K=3 c1 — Discussion (green)
+            "#3B82F6",  # K=3 c2 — Mainstream (blue)
+            "#F59E0B",  # K=4 c0 — Mixed/new (amber)
+            "#10B981",  # K=4 c1 — Discussion
+            "#3B82F6",  # K=4 c2 — Mainstream
+            "#7C3AED",  # K=4 c3 — Mental Health
+        ]
+
+        # Flows from cross-tab:
+        #   K=3 c0 → K=4 c3: 26
+        #   K=3 c1 → K=4 c0: 48, K=4 c1: 137, K=4 c2: 5
+        #   K=3 c2 → K=4 c0: 112, K=4 c2: 155
+        sources = [0, 1, 1, 1, 2, 2]
+        targets = [6, 3, 4, 5, 3, 5]
+        values  = [26, 48, 137, 5, 112, 155]
+
+        # Link colors — semi-transparent versions of the K=3 source's color
+        link_colors = [
+            "rgba(124, 58, 237, 0.5)",  # Mental Health flow (purple)
+            "rgba(16, 185, 129, 0.4)",  # Discussion → Mixed
+            "rgba(16, 185, 129, 0.6)",  # Discussion → Discussion (main flow)
+            "rgba(16, 185, 129, 0.3)",  # Discussion → Mainstream (small leak)
+            "rgba(59, 130, 246, 0.5)",  # Mainstream → Mixed
+            "rgba(59, 130, 246, 0.6)",  # Mainstream → Mainstream (main flow)
+        ]
+
+        fig = go.Figure(data=[go.Sankey(
+            arrangement="snap",  # keeps nodes in the order you specify
+            node=dict(
+                pad=20,
+                thickness=20,
+                line=dict(color="rgba(0,0,0,0.3)", width=0.5),
+                label=node_labels,
+                color=node_colors,
+                hovertemplate="%{label}<br>%{value} subreddits total<extra></extra>",
+            ),
+            link=dict(
+                source=sources,
+                target=targets,
+                value=values,
+                color=link_colors,
+            ),
+        )])
+
+        fig.update_layout(
+            font=dict(size=16, color="#F8F8FF"),
+            height=450,
+            margin=dict(l=20, r=20, t=20, b=20),
+        )
+
+        fig.update_traces(textfont=dict(color="#F8F8FF", size=14))
+        st.plotly_chart(fig, use_container_width=True)
 
     with st.expander("View all 27 emotion categories"):
         st.caption("Annotators select any subset of these per comment.")
         
-        c1, c2, c3, c4 = st.columns(4)
+        c1, c2, c3 = st.columns(3)
         
         def category_box(title, emotions, count, bg_color, border_color):
             return f"""
@@ -458,13 +542,4 @@ with tab4:
                 4,
                 bg_color="#F8E8B0",
                 border_color="#F59E0B",
-            ), unsafe_allow_html=True)
-        
-        with c4:
-            st.markdown(category_box(
-                "Neutral",
-                "neutral",
-                1,
-                bg_color="#D7D7D7",
-                border_color="#888888",
             ), unsafe_allow_html=True)

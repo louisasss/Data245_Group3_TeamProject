@@ -10,3 +10,4 @@ pyarrow
 lightgbm
 xgboost
 streamlit
+plotly

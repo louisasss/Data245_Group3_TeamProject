@@ -23,14 +23,14 @@ print(f"Filtered to {len(df)} rows ({df['id'].nunique()} unique comments)")
 
 # 4. Identify emotion columns (everything that isn't metadata)
 meta_cols = {"text", "id", "author", "subreddit", "link_id", "parent_id",
-             "created_utc", "rater_id", "example_very_unclear"}
+             "created_utc", "rater_id", "example_very_unclear", "neutral"}
 emotion_cols = [c for c in df.columns if c not in meta_cols]
 
 
 # 5. Build emotion string per row
 def row_to_emotion_string(row):
     active = [emo for emo in emotion_cols if row[emo] == 1]
-    return ", ".join(active) if active else "neutral"
+    return ", ".join(active) if active else "(none)"
 
 df["emotion_string"] = df.apply(row_to_emotion_string, axis=1)
 
